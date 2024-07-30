@@ -12,10 +12,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 import sys
 from pathlib import Path
-from decouple import config, Csv
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR.parent / 'data' / 'web'
 
 APPS_DIR = os.path.join(BASE_DIR, 'apps')
 # Adiciona APPS_DIR no início da lista de caminhos do sistema
@@ -25,13 +26,16 @@ sys.path.insert(0, APPS_DIR)
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # Carregando variáveis de ambiente
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY', default='change-me')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 # Variáveis sensíveis e configuração de depuração
 # SECRET_KEY = secret_key
 # DEBUG = debug_mode
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    h.strip() for h in os.getenv('ALLOWED_HOSTS', '').split(',')
+    if h.strip()
+]
 
 
 # Application definition
@@ -87,13 +91,13 @@ WSGI_APPLICATION = 'Projeto_Pesquisa_e_Gestão_Pecuaria.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+   'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST', 'psql'),  # nome do serviço do PostgreSQL no docker-compose.yml
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
@@ -131,9 +135,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = DATA_DIR / 'static'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = DATA_DIR / 'media'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'staticfiles')]
 
 # Default primary key field type

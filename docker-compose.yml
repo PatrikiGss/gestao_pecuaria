@@ -1,0 +1,32 @@
+services:
+  web:
+    container_name: gestao-pecuaria-backend
+    build: 
+      context: .
+      dockerfile: dockerfile 
+    ports:
+      - 8080:8000
+    volumes:
+      - ./Projeto_Pesquisa_e_Gestão_Pecuaria:/Projeto_Pesquisa_e_Gestão_Pecuaria
+      - ./data/web/static:/data/web/static
+      - ./data/web/media:/data/web/media
+    env_file:
+      - ./.env
+    depends_on:
+      - psql
+    command: ["sh", "-c", "/scripts/commands.sh"]
+    user: "1000:1000" 
+
+  psql:
+    container_name: psql
+    image: postgres:13-alpine
+    volumes:
+      - ./data/postgres/data:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
